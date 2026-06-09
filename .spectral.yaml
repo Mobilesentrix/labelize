@@ -1,0 +1,80 @@
+extends: ["spectral:oas"]
+
+rules:
+  # ── AEP-140: Field naming ────────────────────────────────────
+  aep-field-names-snake-case:
+    description: "AEP-140: Field names must use lower_snake_case."
+    severity: error
+    given: "$.components.schemas.*.properties.*~"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-z0-9]*(_[a-z0-9]+)*$"
+
+  # ── AEP-122: path field must exist in resources ──────────────
+  aep-resource-path-field:
+    description: "AEP-122: Resources with x-aep-resource must have a 'path' property."
+    severity: error
+    given: "$.components.schemas[?(@.x-aep-resource)]"
+    then:
+      field: "properties.path"
+      function: truthy
+
+  # ── AEP-4: x-aep-resource annotation completeness ───────────
+  aep-resource-annotation-type:
+    description: "AEP-4: x-aep-resource must include 'type' field."
+    severity: error
+    given: "$.components.schemas.*.x-aep-resource"
+    then:
+      field: "type"
+      function: truthy
+
+  aep-resource-annotation-singular:
+    description: "AEP-4: x-aep-resource must include 'singular' field."
+    severity: error
+    given: "$.components.schemas.*.x-aep-resource"
+    then:
+      field: "singular"
+      function: truthy
+
+  aep-resource-annotation-plural:
+    description: "AEP-4: x-aep-resource must include 'plural' field."
+    severity: error
+    given: "$.components.schemas.*.x-aep-resource"
+    then:
+      field: "plural"
+      function: truthy
+
+  aep-resource-annotation-patterns:
+    description: "AEP-4: x-aep-resource must include 'patterns' field."
+    severity: error
+    given: "$.components.schemas.*.x-aep-resource"
+    then:
+      field: "patterns"
+      function: truthy
+
+  # ── AEP-193: Error responses must have 'type' field ──────────
+  aep-error-type-field:
+    description: "AEP-193: Error schema must have a required 'type' property."
+    severity: error
+    given: "$.components.schemas.Error"
+    then:
+      field: "properties.type"
+      function: truthy
+
+  # ── AEP-136: Custom methods must use POST ────────────────────
+  aep-custom-method-post:
+    description: "AEP-136: Custom methods (paths with ':') should use POST."
+    severity: warn
+    given: "$.paths[?(@property.match(/:/))].get"
+    then:
+      function: falsy
+
+  # ── General: Operation IDs must exist ────────────────────────
+  operation-operationId:
+    severity: error
+    description: "Every operation must have an operationId."
+    given: "$.paths[*][get,post,put,patch,delete]"
+    then:
+      field: "operationId"
+      function: truthy

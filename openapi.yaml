@@ -1,0 +1,235 @@
+# ZPL2PDF - AEP-Compliant OpenAPI Specification
+
+openapi: 3.1.0
+info:
+  title: ZPL2PDF API
+  version: 1.1.0
+  description: >
+    ZPL2PDF is a fast, open-source ZPL/EPL label rendering engine.
+    Convert thermal label markup (ZPL or EPL) to PNG or PDF images
+    via a simple REST API. Self-hosted Labelary alternative.
+  license:
+    name: MIT
+    identifier: MIT
+  contact:
+    email: ravi@mobilesentrix.com
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://api.dev.msrestapi.com/zpl2pdf
+    description: Dev
+
+security:
+  - bearerAuth: []
+  - clientIdHeader: []
+    clientSecretHeader: []
+
+paths:
+  /health:
+    get:
+      operationId: GetHealth
+      summary: Get the service health status.
+      description: >
+        Returns the current health status of the Labelize service.
+        This is a singleton resource - there is exactly one health
+        status per service instance.
+      tags:
+        - Health
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+  /convert:
+    post:
+      operationId: ConvertLabel
+      summary: Convert ZPL or EPL markup to PNG or PDF.
+      description: >
+        Accepts raw ZPL or EPL label markup in the request body and
+        returns the rendered label as a PNG image or PDF document.
+
+
+        The input format is detected from the `Content-Type` header:
+
+        - `application/zpl` - ZPL (Zebra Programming Language)
+
+        - `application/epl` - EPL (Eltron Programming Language)
+
+
+        If `Content-Type` is not one of the above, ZPL is assumed.
+      tags:
+        - Labels
+      parameters:
+        - name: width
+          in: query
+          description: Label width in millimeters.
+          schema:
+            type: number
+            format: double
+            default: 102.0
+        - name: height
+          in: query
+          description: Label height in millimeters.
+          schema:
+            type: number
+            format: double
+            default: 152.0
+        - name: dpmm
+          in: query
+          description: >
+            Dots per millimeter. Common values: 6 (152 DPI), 8 (203 DPI),
+            12 (300 DPI), 24 (600 DPI).
+          schema:
+            type: integer
+            format: int32
+            default: 8
+        - name: output
+          in: query
+          description: >
+            Desired output format. Determines the Content-Type of the response.
+          schema:
+            type: string
+            enum:
+              - png
+              - pdf
+            default: png
+      requestBody:
+        required: true
+        description: >
+          Raw label markup. Set `Content-Type` to `application/zpl` or
+          `application/epl` to select the parser.
+        content:
+          application/zpl:
+            schema:
+              type: string
+              format: binary
+              description: ZPL (Zebra Programming Language) label data.
+            example: "^XA^FO50,50^A0N,40,40^FDHello World^FS^XZ"
+          application/epl:
+            schema:
+              type: string
+              format: binary
+              description: EPL (Eltron Programming Language) label data.
+            example: "N\nA50,50,0,1,1,1,N,\"Hello World\"\nP1\n"
+      responses:
+        "200":
+          description: Successfully rendered label.
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+                description: Rendered label as a PNG image.
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+                description: Rendered label as a PDF document.
+        "400":
+          description: Invalid label markup or no labels found in input.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal rendering error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /:
+    get:
+      operationId: GetPlayground
+      summary: Serve the interactive web playground.
+      description: >
+        Returns an interactive HTML page where users can paste ZPL/EPL
+        markup, choose label dimensions, and render labels directly in
+        the browser. This is a developer tool, not an API resource.
+      tags:
+        - Playground
+      responses:
+        "200":
+          description: HTML playground page.
+          content:
+            text/html:
+              schema:
+                type: string
+
+components:
+  schemas:
+    Health:
+      type: object
+      description: >
+        Singleton resource representing the health status of the
+        Labelize service instance.
+      x-aep-resource:
+        singular: health
+        plural: health
+        type: "labelize.mobilesentrix.com/health"
+        patterns:
+          - "health"
+      properties:
+        path:
+          type: string
+          readOnly: true
+          description: >
+            Resource path. Always `health` for this singleton.
+        status:
+          type: string
+          readOnly: true
+          description: >
+            Service health status. Always `ok` when the service is
+            running and able to accept requests.
+          enum:
+            - ok
+            - degraded
+      required:
+        - status
+    Error:
+      type: object
+      description: >
+        Error response following RFC 9457 Problem Details format
+        (AEP-193).
+      properties:
+        type:
+          type: string
+          description: >
+            A machine-readable error type identifier.
+          example: INVALID_LABEL_MARKUP
+        status:
+          type: integer
+          format: int32
+          description: >
+            The HTTP status code for this error.
+          example: 400
+        title:
+          type: string
+          description: >
+            A short, human-readable summary of the error type.
+            Must not contain PII or occurrence-specific information.
+          example: Bad Request
+        detail:
+          type: string
+          description: >
+            A human-readable explanation specific to this occurrence.
+            Should be actionable.
+          example: "No labels found in input. Ensure the ZPL data contains ^XA...^XZ blocks."
+        instance:
+          type: string
+          description: >
+            A unique identifier for this specific error occurrence.
+            Useful for correlating with server logs.
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      required:
+        - type
+
+tags:
+  - name: Health
+    description: Service health check.
+  - name: Labels
+    description: Label rendering operations.
+  - name: Playground
+    description: Interactive browser-based label playground.

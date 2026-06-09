@@ -18,7 +18,7 @@ use crate::images;
 
 use super::drawer_state::DrawerState;
 
-static FONT_HELVETICA: &[u8] = crate::assets::FONT_HELVETICA_BOLD;
+static FONT_HELVETICA: &[u8] = crate::assets::FONT_HELVETICA;
 static FONT_DEJAVU_MONO: &[u8] = crate::assets::FONT_DEJAVU_SANS_MONO;
 static FONT_DEJAVU_BOLD: &[u8] = crate::assets::FONT_DEJAVU_SANS_MONO_BOLD;
 static FONT_GS: &[u8] = crate::assets::FONT_ZPL_GS;
