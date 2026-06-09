@@ -45,7 +45,7 @@
 ║ return_qrcode                  │ zpl  │    2.86% │      813x1626 │      813x1626 │ MINOR(<5%)   ║
 ║ reverse                        │ zpl  │    0.41% │      813x1626 │      813x1626 │ GOOD(<1%)    ║
 ║ reverse_qr                     │ zpl  │    0.33% │      813x1626 │      813x1626 │ GOOD(<1%)    ║
-║ templating                     │ zpl  │    1.17% │      813x1626 │      813x1626 │ MINOR(<5%)   ║
+║ templating                     │ zpl  │    1.10% │      813x1626 │      813x1626 │ MINOR(<5%)   ║
 ║ text_fallback_default          │ zpl  │    4.10% │      813x1626 │      813x1626 │ MINOR(<5%)   ║
 ║ text_fo_b                      │ zpl  │    0.06% │      813x1626 │      813x1626 │ GOOD(<1%)    ║
 ║ text_fo_i                      │ zpl  │    0.06% │      813x1626 │      813x1626 │ GOOD(<1%)    ║
